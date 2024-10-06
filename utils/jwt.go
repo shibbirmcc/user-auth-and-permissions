@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"os"
 	"time"
 
@@ -9,6 +10,13 @@ import (
 )
 
 func GenerateJWT(email string, userDetails models.UserDetail) (string, error) {
+	if email == "" {
+		return "", errors.New("email cannot be empty")
+	}
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		return "", errors.New("JWT_SECRET is missing")
+	}
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &models.Claims{
 		Email:      email,
@@ -21,5 +29,5 @@ func GenerateJWT(email string, userDetails models.UserDetail) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	return token.SignedString([]byte(jwtSecret))
 }

@@ -2,8 +2,8 @@ package utils_test
 
 import (
 	"testing"
-	"utils"
 
+	"github.com/shibbirmcc/user-auth-and-permissions/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 
