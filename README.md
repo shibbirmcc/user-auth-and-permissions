@@ -94,6 +94,7 @@ To run this **Golang microservice** locally, ensure you have the following insta
     ```bash
     # replace serviceuser and servicepassword with your desired value
     CREATE ROLE serviceuser WITH LOGIN PASSWORD 'servicepassword';
+    ALTER ROLE serviceuser CREATEDB;
     ```
     - Create a new database for the service:
     ```bash
