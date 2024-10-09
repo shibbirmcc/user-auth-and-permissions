@@ -7,11 +7,10 @@ type User struct {
 }
 
 type UserDetail struct {
-	UserID     uint   `gorm:"primaryKey"`
-	FirstName  string `gorm:"not null" json:"first_name"`
-	MiddleName string `json:"middle_name"`
-	LastName   string `gorm:"not null" json:"last_name"`
-	User       User   `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE"`
+	UserID     uint   `gorm:"column:user_id;primaryKey"`
+	FirstName  string `gorm:"column:firstname;not null;size:100" json:"first_name"`
+	MiddleName string `gorm:"column:middlename;size:100" json:"middle_name"`
+	LastName   string `gorm:"column:lastname;not null;size:100" json:"last_name"`
 }
 
 type UserRegitrationRequest struct {

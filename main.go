@@ -9,7 +9,6 @@ import (
 	"github.com/golang-migrate/migrate/v4" // Aliasing to avoid conflict
 	migratePostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/shibbirmcc/user-auth-and-permissions/middlewares"
 	"github.com/shibbirmcc/user-auth-and-permissions/routes"
 
 	"github.com/joho/godotenv"
@@ -71,13 +70,9 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to connect to database")
 	}
-
 	runMigrations()
 
-	router := routes.InitRoutes()
-
-	router.Use(middlewares.InjectDBMiddleware(db))
-	router.Use(middlewares.CORSMiddleware())
+	router := routes.InitRoutes(db)
 
 	port := os.Getenv("PORT")
 	if port == "" {

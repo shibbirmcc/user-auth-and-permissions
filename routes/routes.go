@@ -3,18 +3,23 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/shibbirmcc/user-auth-and-permissions/handlers"
+	"github.com/shibbirmcc/user-auth-and-permissions/middlewares"
+	"gorm.io/gorm"
 )
 
-func InitRoutes() *gin.Engine {
+func InitRoutes(db *gorm.DB) *gin.Engine {
 	router := gin.Default()
 
-	// Auth routes
-	authGroup := router.Group("/auth")
-	{
-		authGroup.POST("/register", handlers.RegisterUser)
-		authGroup.POST("/login", handlers.LoginUser)
-	}
+	router.Use(func(c *gin.Context) {
+		c.Set("db", db)
+		c.Next()
+	})
 
-	// Other routes like permissions, roles, etc. can go here
+	// router.Use(middlewares.InjectDBMiddleware(db))
+	router.Use(middlewares.CORSMiddleware())
+
+	router.POST("/auth/register", handlers.RegisterUser)
+	router.POST("/auth/login", handlers.LoginUser)
+
 	return router
 }
