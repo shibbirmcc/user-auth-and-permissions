@@ -1,0 +1,86 @@
+package main
+
+import (
+	"context"
+	"log"
+	"os"
+	"testing"
+	"time"
+
+	"github.com/joho/godotenv"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
+)
+
+func TestMain(m *testing.M) {
+	// Load the .env.test file
+	err := godotenv.Load(".env.test")
+	if err != nil {
+		log.Fatalf("Error loading .env.test file: %v", err)
+	}
+
+	// Create PostgreSQL container
+	ctx := context.Background()
+	req := testcontainers.ContainerRequest{
+		Image:        "postgres:15", // PostgreSQL version you want to use
+		ExposedPorts: []string{"5432/tcp"},
+		Env: map[string]string{
+			"POSTGRES_USER":     os.Getenv("DB_USER"),
+			"POSTGRES_PASSWORD": os.Getenv("DB_PASSWORD"),
+			"POSTGRES_DB":       os.Getenv("DB_NAME"),
+		},
+		WaitingFor: wait.ForListeningPort("5432/tcp").WithStartupTimeout(60 * time.Second),
+	}
+
+	postgresContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: req,
+		Started:          true,
+	})
+	if err != nil {
+		log.Fatalf("Could not start container: %v", err)
+	}
+
+	defer postgresContainer.Terminate(ctx)
+
+	host, _ := postgresContainer.Host(ctx)
+	port, _ := postgresContainer.MappedPort(ctx, "5432/tcp")
+
+	os.Setenv("DB_HOST", host)
+	os.Setenv("DB_PORT", port.Port())
+
+	// Now call main() to run migrations and initialize everything
+	go main()
+
+	// Give the server some time to start
+	time.Sleep(5 * time.Second)
+
+	// Set up the connection string for GORM
+	// dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+	// 	host, port.Port(), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
+
+	// var db *gorm.DB
+	// db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+	// 	Logger: logger.Default.LogMode(logger.Info),
+	// })
+	// if err != nil {
+	// 	log.Fatalf("Could not connect to the test database: %v", err)
+	// }
+
+	// // Run database migrations
+	// runMigrations()
+
+	// router := gin.Default()
+	// router.Use(func(c *gin.Context) {
+	// 	c.Set("db", db)
+	// 	c.Next()
+	// })
+	// // router.Use(middlewares.InjectDBMiddleware(db))
+	// router.Use(middlewares.CORSMiddleware())
+	// routes.ConfigureRouteEndpoints(router)
+
+	// This code will run all the tests of this repository regardless of package
+	code := m.Run()
+
+	// Exit with the correct exit code
+	os.Exit(code)
+}

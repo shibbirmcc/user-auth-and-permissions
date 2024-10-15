@@ -1,69 +1,31 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/gin-gonic/gin"
-	"github.com/golang-migrate/migrate/v4" // Aliasing to avoid conflict
-	migratePostgres "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/gin-gonic/gin" // Aliasing to avoid conflict
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/shibbirmcc/user-auth-and-permissions/middlewares"
-	"github.com/shibbirmcc/user-auth-and-permissions/routes"
-
 	"github.com/joho/godotenv"
+	"github.com/shibbirmcc/user-auth-and-permissions/handlers"
+	"github.com/shibbirmcc/user-auth-and-permissions/middlewares"
+	"github.com/shibbirmcc/user-auth-and-permissions/migrations"
+	"github.com/shibbirmcc/user-auth-and-permissions/routes"
+	"github.com/shibbirmcc/user-auth-and-permissions/services"
 	gormPostgres "gorm.io/driver/postgres" // Aliasing to avoid conflict
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-func runMigrations() {
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
-
-	// Open a connection to the database
-	db, err := sql.Open("postgres", dsn) // Use the standard "database/sql" package to open a connection
-	if err != nil {
-		log.Fatalf("Failed to connect to database for migrations: %v", err)
-	}
-
-	// Ensure the connection is working
-	if err = db.Ping(); err != nil {
-		log.Fatalf("Failed to ping database: %v", err)
-	}
-
-	// Create a Postgres driver instance for migrations
-	driver, err := migratePostgres.WithInstance(db, &migratePostgres.Config{})
-	if err != nil {
-		log.Fatalf("Failed to create migration driver: %v", err)
-	}
-
-	// Create a new migration instance
-	m, err := migrate.NewWithDatabaseInstance(
-		"file://migrations", // Path to your migrations folder
-		"postgres",          // The name of the database driver
-		driver,
-	)
-	if err != nil {
-		log.Fatalf("Failed to initialize migrations: %v", err)
-	}
-
-	// Apply all migrations
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("Failed to apply migrations: %v", err)
-	}
-
-	log.Println("Database migrations applied successfully")
-}
-
 func main() {
+	// Load environment variables
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
+	// Set up the database connection using Gorm
 	var db *gorm.DB
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
 	db, err = gorm.Open(gormPostgres.Open(dsn), &gorm.Config{
@@ -72,18 +34,25 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to connect to database")
 	}
-	runMigrations()
 
+	// Run database migrations
+	migrations.RunMigrations()
+
+	// Set up services
+	databaseOperationService := services.NewDatabaseOperationService(db)
+	userRegistrationService := services.NewUserRegistrationService(databaseOperationService)
+
+	// Set up handlers
+	userHandler := handlers.NewUserHandler(*userRegistrationService)
+
+	// Set up the Gin router
 	router := gin.Default()
-	router.Use(func(c *gin.Context) {
-		c.Set("db", db)
-		c.Next()
-	})
-	// router.Use(middlewares.InjectDBMiddleware(db))
-	router.Use(middlewares.CORSMiddleware())
+	router.Use(middlewares.CORSMiddleware()) // Add middleware for CORS
 
-	routes.ConfigureRouteEndpoints(router)
+	// Set up route handlers (using the userHandler)
+	routes.ConfigureRouteEndpoints(router, userHandler)
 
+	// Start the server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

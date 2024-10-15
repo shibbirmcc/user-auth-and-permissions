@@ -5,7 +5,6 @@ import (
 	"github.com/shibbirmcc/user-auth-and-permissions/handlers"
 )
 
-func ConfigureRouteEndpoints(router *gin.Engine) {
-	router.POST("/auth/register", handlers.RegisterUser)
-	router.POST("/auth/login", handlers.LoginUser)
+func ConfigureRouteEndpoints(router *gin.Engine, userHandler *handlers.UserHandler) {
+	router.POST("/auth/register", userHandler.RegisterUser)
 }

@@ -100,6 +100,7 @@ To run this **Golang microservice** locally, ensure you have the following insta
     ```bash
     # replace servicedatabase with desired value
     CREATE DATABASE servicedatabase OWNER serviceuser;
+    ALTER DATABASE servicedatabase OWNER TO serviceuser;
     ```
     - Grant Privileges to the New User:
     ```bash
