@@ -6,9 +6,11 @@ import (
 	"log"
 	"os"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4" // Aliasing to avoid conflict
 	migratePostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/shibbirmcc/user-auth-and-permissions/middlewares"
 	"github.com/shibbirmcc/user-auth-and-permissions/routes"
 
 	"github.com/joho/godotenv"
@@ -18,8 +20,8 @@ import (
 )
 
 func runMigrations() {
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
 
 	// Open a connection to the database
 	db, err := sql.Open("postgres", dsn) // Use the standard "database/sql" package to open a connection
@@ -63,7 +65,7 @@ func main() {
 	}
 
 	var db *gorm.DB
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable", os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
 	db, err = gorm.Open(gormPostgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
@@ -72,7 +74,15 @@ func main() {
 	}
 	runMigrations()
 
-	router := routes.InitRoutes(db)
+	router := gin.Default()
+	router.Use(func(c *gin.Context) {
+		c.Set("db", db)
+		c.Next()
+	})
+	// router.Use(middlewares.InjectDBMiddleware(db))
+	router.Use(middlewares.CORSMiddleware())
+
+	routes.ConfigureRouteEndpoints(router)
 
 	port := os.Getenv("PORT")
 	if port == "" {
