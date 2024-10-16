@@ -7,10 +7,6 @@ import (
 	"github.com/shibbirmcc/user-auth-and-permissions/utils"
 )
 
-type IDatabaseOperationService interface {
-	CreateUser(user *models.User, userDetail *models.UserDetail) error
-}
-
 type UserRegistrationService struct {
 	dbService IDatabaseOperationService
 }

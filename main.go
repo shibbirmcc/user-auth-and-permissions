@@ -41,9 +41,10 @@ func main() {
 	// Set up services
 	databaseOperationService := services.NewDatabaseOperationService(db)
 	userRegistrationService := services.NewUserRegistrationService(databaseOperationService)
+	userLoginService := services.NewUserLoginService(databaseOperationService)
 
 	// Set up handlers
-	userHandler := handlers.NewUserHandler(*userRegistrationService)
+	userHandler := handlers.NewUserHandler(*userRegistrationService, *userLoginService)
 
 	// Set up the Gin router
 	router := gin.Default()

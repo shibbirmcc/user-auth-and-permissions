@@ -7,4 +7,5 @@ import (
 
 func ConfigureRouteEndpoints(router *gin.Engine, userHandler *handlers.UserHandler) {
 	router.POST("/auth/register", userHandler.RegisterUser)
+	router.POST("/auth/login", userHandler.LoginUser)
 }

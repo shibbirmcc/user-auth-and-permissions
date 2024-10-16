@@ -5,18 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/shibbirmcc/user-auth-and-permissions/models"
-	"github.com/shibbirmcc/user-auth-and-permissions/services"
 )
-
-type UserHandler struct {
-	userRegistrationService services.UserRegistrationService
-}
-
-func NewUserHandler(registrationService services.UserRegistrationService) *UserHandler {
-	return &UserHandler{
-		userRegistrationService: registrationService,
-	}
-}
 
 func (h *UserHandler) RegisterUser(c *gin.Context) {
 	var input models.UserRegitrationRequest
