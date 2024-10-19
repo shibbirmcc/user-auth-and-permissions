@@ -37,7 +37,6 @@ func (s *DatabaseOperationService) FindUserByEmail(email string) (*models.User, 
 	return &user, nil
 }
 
-// FindUserDetailsByUserID finds the user details by their user ID
 func (s *DatabaseOperationService) FindUserDetailsByUserID(userID uint) (*models.UserDetail, error) {
 	var userDetails models.UserDetail
 	if err := s.db.Where("user_id = ?", userID).First(&userDetails).Error; err != nil {

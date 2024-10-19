@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/shibbirmcc/user-auth-and-permissions/models"
 	"github.com/shibbirmcc/user-auth-and-permissions/utils"
@@ -34,6 +35,7 @@ func (s *UserLoginService) Login(input models.LoginRequest) (string, error) {
 
 	token, err := utils.GenerateJWT(user.Email, *userDetails)
 	if err != nil {
+		fmt.Println("Error:", err)
 		return "", errors.New("Could not generate token")
 	}
 
