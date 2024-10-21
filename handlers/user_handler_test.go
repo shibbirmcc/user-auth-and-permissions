@@ -40,19 +40,9 @@ func (m *MockDatabaseOperationService) FindUserDetailsByUserID(userID uint) (*mo
 	}, nil
 }
 
-type MockEmailService struct {
-	mock.Mock
-}
-
-func (m *MockEmailService) SendMail(receiver_address, receiver_name, email_content string) error {
-	args := m.Called(receiver_address, receiver_name, email_content)
-	return args.Error(0)
-}
-
 func TestNewUserHandler(t *testing.T) {
 	mockDBService := new(MockDatabaseOperationService)
-	mockeEmailService := new(MockEmailService)
-	mockRegService := services.NewUserRegistrationService(mockDBService, mockeEmailService)
+	mockRegService := services.NewUserRegistrationService(mockDBService)
 	mockLoginService := services.NewUserLoginService(mockDBService)
 	handler := NewUserHandler(*mockRegService, *mockLoginService)
 
