@@ -8,12 +8,14 @@ import (
 )
 
 type UserRegistrationService struct {
-	dbService IDatabaseOperationService
+	dbService    IDatabaseOperationService
+	emailService IEmailService
 }
 
-func NewUserRegistrationService(dbService IDatabaseOperationService) *UserRegistrationService {
+func NewUserRegistrationService(dbService IDatabaseOperationService, emailService IEmailService) *UserRegistrationService {
 	return &UserRegistrationService{
-		dbService: dbService,
+		dbService:    dbService,
+		emailService: emailService,
 	}
 }
 

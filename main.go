@@ -40,7 +40,8 @@ func main() {
 
 	// Set up services
 	databaseOperationService := services.NewDatabaseOperationService(db)
-	userRegistrationService := services.NewUserRegistrationService(databaseOperationService)
+	emailService := services.NewEmailService()
+	userRegistrationService := services.NewUserRegistrationService(databaseOperationService, emailService)
 	userLoginService := services.NewUserLoginService(databaseOperationService)
 
 	// Set up handlers
