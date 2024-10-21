@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/shibbirmcc/user-auth-and-permissions/models"
 	"github.com/shibbirmcc/user-auth-and-permissions/utils"
@@ -18,10 +19,11 @@ func NewUserRegistrationService(dbService IDatabaseOperationService) *UserRegist
 }
 
 func (s *UserRegistrationService) RegisterUser(input models.UserRegitrationRequest) error {
-	hashedPassword, err := utils.HashPassword(input.Password)
+	generatedPassword, hashedPassword, err := utils.GetRandomPasswordAndHash()
 	if err != nil {
-		return errors.New("error while hashing password")
+		return errors.New("Error while generating temporary password and hash")
 	}
+	fmt.Println("Generated Password:", generatedPassword)
 
 	user := models.User{Email: input.Email, Password: hashedPassword}
 	userDetail := models.UserDetail{

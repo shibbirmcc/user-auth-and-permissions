@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -140,8 +139,6 @@ func TestLoginUser(t *testing.T) {
 		c.Request = req
 
 		handler.LoginUser(c)
-
-		fmt.Println("Response Body:", w.Body.String())
 
 		// Assert the results
 		assert.Equal(t, http.StatusUnauthorized, w.Code)

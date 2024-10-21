@@ -138,6 +138,10 @@ The following endpoints are available:
 ### **Running Tests**
 This project includes both unit and integration tests using TestContainers to simulate the PostgreSQL database.
 
+- **Clear the cache before running tests**:
+```bash
+go clean -testcache
+```
 - **Run Unit Tests**:
 ```bash
 go test ./...
@@ -145,6 +149,10 @@ go test ./...
 - **Run Integration Tests**:
 ```bash
 go test -tags=integration ./tests
+```
+- **Show Test Execution time for each package**:
+```bash
+go test -v ./...
 ```
 
 ### **Code Coverage**
