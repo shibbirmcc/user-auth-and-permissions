@@ -3,45 +3,42 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
+	"github.com/shibbirmcc/user-auth-and-permissions/mocks"
 	"github.com/shibbirmcc/user-auth-and-permissions/models"
 	"github.com/shibbirmcc/user-auth-and-permissions/services"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMain(m *testing.M) {
-	err := godotenv.Load("../.env.test")
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
-
-	// Run the tests
-	code := m.Run()
-
-	// Exit with the appropriate code
-	os.Exit(code)
-}
-
 func TestLoginUser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Run("successful login", func(t *testing.T) {
-		mockDBService := new(MockDatabaseOperationService)
+		mockDBService := new(mocks.MockDatabaseOperationService)
 		mockRegService := services.NewUserRegistrationService(mockDBService)
 		mockLoginService := services.NewUserLoginService(mockDBService)
 
 		handler := &UserHandler{userRegistrationService: *mockRegService, userLoginService: *mockLoginService}
 
 		loginRequest := models.LoginRequest{
-			Email:    testUserEmail,
-			Password: testUserPassword,
+			Email:    mocks.TestUserEmail,
+			Password: mocks.TestUserPassword,
 		}
+
+		user := &models.User{
+			Email:    mocks.TestUserEmail,
+			Password: mocks.TestUserPasswordHash,
+		}
+		userDetails := &models.UserDetail{
+			FirstName: mocks.TestUserFirstName,
+			LastName:  mocks.TestUserLastName,
+		}
+
+		mockDBService.On("FindUserByEmail", loginRequest.Email).Return(user, nil)
+		mockDBService.On("FindUserDetailsByUserID", user.ID).Return(userDetails, nil)
 
 		// Create a request
 		requestBody, _ := json.Marshal(loginRequest)
@@ -59,10 +56,22 @@ func TestLoginUser(t *testing.T) {
 	})
 
 	t.Run("bad request with invalid JSON", func(t *testing.T) {
-		mockDBService := new(MockDatabaseOperationService)
+		mockDBService := new(mocks.MockDatabaseOperationService)
 		mockRegService := services.NewUserRegistrationService(mockDBService)
 		mockLoginService := services.NewUserLoginService(mockDBService)
 		handler := &UserHandler{userRegistrationService: *mockRegService, userLoginService: *mockLoginService}
+
+		user := &models.User{
+			Email:    mocks.TestUserEmail,
+			Password: mocks.TestUserPasswordHash,
+		}
+		userDetails := &models.UserDetail{
+			FirstName: mocks.TestUserFirstName,
+			LastName:  mocks.TestUserLastName,
+		}
+
+		mockDBService.On("FindUserByEmail", user.Email).Return(user, nil)
+		mockDBService.On("FindUserDetailsByUserID", user.ID).Return(userDetails, nil)
 
 		// Create a request with invalid JSON
 		req, _ := http.NewRequest(http.MethodPost, "/auth/login", bytes.NewBuffer([]byte("{invalid-json")))
@@ -85,7 +94,7 @@ func TestLoginUser(t *testing.T) {
 	})
 
 	t.Run("Invalid Email format Error Test", func(t *testing.T) {
-		mockDBService := new(MockDatabaseOperationService)
+		mockDBService := new(mocks.MockDatabaseOperationService)
 		mockRegService := services.NewUserRegistrationService(mockDBService)
 		mockLoginService := services.NewUserLoginService(mockDBService)
 		handler := &UserHandler{userRegistrationService: *mockRegService, userLoginService: *mockLoginService}
@@ -95,6 +104,8 @@ func TestLoginUser(t *testing.T) {
 			Email:    "testuser",
 			Password: "wrongpass",
 		}
+
+		mockDBService.On("FindUserByEmail", loginRequest.Email).Return(nil, nil)
 
 		// Create a request
 		requestBody, _ := json.Marshal(loginRequest)
@@ -117,16 +128,28 @@ func TestLoginUser(t *testing.T) {
 	})
 
 	t.Run("Unauthorized Login Test", func(t *testing.T) {
-		mockDBService := new(MockDatabaseOperationService)
+		mockDBService := new(mocks.MockDatabaseOperationService)
 		mockRegService := services.NewUserRegistrationService(mockDBService)
 		mockLoginService := services.NewUserLoginService(mockDBService)
 		handler := &UserHandler{userRegistrationService: *mockRegService, userLoginService: *mockLoginService}
 
 		// Sample request data
 		loginRequest := models.LoginRequest{
-			Email:    testUserEmail,
+			Email:    mocks.TestUserEmail,
 			Password: "wrongpass",
 		}
+
+		user := &models.User{
+			Email:    mocks.TestUserEmail,
+			Password: mocks.TestUserPasswordHash,
+		}
+		userDetails := &models.UserDetail{
+			FirstName: mocks.TestUserFirstName,
+			LastName:  mocks.TestUserLastName,
+		}
+
+		mockDBService.On("FindUserByEmail", user.Email).Return(user, nil)
+		mockDBService.On("FindUserDetailsByUserID", user.ID).Return(userDetails, nil)
 
 		// Create a request
 		requestBody, _ := json.Marshal(loginRequest)
