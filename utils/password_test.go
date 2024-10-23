@@ -32,6 +32,31 @@ func TestHashPassword_Error(t *testing.T) {
 	}
 }
 
+func TestCheckPasswordHash(t *testing.T) {
+	// Test case: password matches hash
+	password := "securepassword"
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		t.Fatalf("failed to hash password: %v", err)
+	}
+
+	if !utils.CheckPasswordHash(password, string(hash)) {
+		t.Error("expected password to match the hash, but it did not")
+	}
+
+	// Test case: password does not match hash
+	wrongPassword := "wrongpassword"
+	if utils.CheckPasswordHash(wrongPassword, string(hash)) {
+		t.Error("expected password not to match the hash, but it did")
+	}
+
+	// Test case: invalid hash
+	invalidHash := "invalidhash"
+	if utils.CheckPasswordHash(password, invalidHash) {
+		t.Error("expected invalid hash to return false, but it returned true")
+	}
+}
+
 // TestGetRandomPasswordAndHash tests the GetRandomPasswordAndHash function
 func TestGetRandomPasswordAndHash(t *testing.T) {
 	password, hashedPassword, err := utils.GetRandomPasswordAndHash()

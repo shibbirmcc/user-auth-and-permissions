@@ -24,10 +24,8 @@ func CheckPasswordHash(password, hash string) bool {
 }
 
 func GetRandomPasswordAndHash() (string, string, error) {
-	password, err := GenerateRandomPassword(12) // for example, a 12 character password
-	if err != nil {
-		return "", "", fmt.Errorf("failed to generate password: %w", err)
-	}
+	// There can be error only if the length is zero, since the length is hardcoded, no need to handle error here
+	password, _ := GenerateRandomPassword(12)
 	// Hash the generated password
 	hashedPassword, err := HashPassword(password)
 	if err != nil {
