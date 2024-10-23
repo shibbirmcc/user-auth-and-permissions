@@ -65,9 +65,11 @@ func TestGenerateRandomPassword(t *testing.T) {
 
 // TestGenerateRandomPassword_Error tests the error case of GenerateRandomPassword
 func TestGenerateRandomPassword_Error(t *testing.T) {
-	// This test case would simulate failure of rand.Int function
-	// however, since rand.Int cannot be easily mocked, this error scenario
-	// is hard to simulate in standard testing.
-
-	// Leaving this function as a placeholder in case mocking is introduced.
+	length := 0
+	_, err := utils.GenerateRandomPassword(length)
+	if err == nil {
+		t.Errorf("expected error, got nil")
+	} else if err.Error() != "Password length must be greater than zero" {
+		t.Errorf("expected 'Password length must be greater than zero', but got %v", err)
+	}
 }

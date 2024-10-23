@@ -37,6 +37,9 @@ func GetRandomPasswordAndHash() (string, string, error) {
 }
 
 func GenerateRandomPassword(length int) (string, error) {
+	if length <= 0 {
+		return "", errors.New("Password length must be greater than zero")
+	}
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	var password strings.Builder
 	charsetSize := big.NewInt(int64(len(charset)))
