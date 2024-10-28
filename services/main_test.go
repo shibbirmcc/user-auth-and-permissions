@@ -6,7 +6,6 @@ import (
 
 	"github.com/shibbirmcc/user-auth-and-permissions/migrations"
 	"github.com/shibbirmcc/user-auth-and-permissions/tests"
-	"gorm.io/gorm"
 )
 
 var (
@@ -17,13 +16,11 @@ var (
 This TestMain method will be executed before starting to execute tests of this package
 */
 func TestMain(m *testing.M) {
-	tests.SetupPostgresContainer()
-	var db *gorm.DB
-	db, _ = tests.GetGormDBFromSQLDB(tests.DB)
+	db, TeardownPostgresContainer := tests.SetupPostgresContainer()
 	migrations.RunMigrations(db, "../migrations")
 	DBOperationService = *NewDatabaseOperationService(db)
 
 	code := m.Run()
-	tests.TeardownPostgresContainer()
+	TeardownPostgresContainer()
 	os.Exit(code)
 }

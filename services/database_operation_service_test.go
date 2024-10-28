@@ -1,6 +1,7 @@
 package services
 
 import (
+	"log"
 	"testing"
 
 	"github.com/shibbirmcc/user-auth-and-permissions/mocks"
@@ -40,7 +41,11 @@ func TestDatabaseOperationService_CreateUser(t *testing.T) {
 		assert.Equal(t, userDetails.FirstName, createdUserDetail.FirstName)
 		assert.Equal(t, userDetails.LastName, createdUserDetail.LastName)
 
-		tests.DeleteTestData()
+		sqlDB, err := DBOperationService.db.DB()
+		if err != nil {
+			log.Printf("Failed to connect to database for migrations: %v", err)
+		}
+		tests.DeleteTestData(sqlDB)
 	})
 }
 
@@ -63,7 +68,11 @@ func TestDatabaseOperationService_FindUserByEmail(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, user.Password, foundUser.Password)
 
-		tests.DeleteTestData()
+		sqlDB, err := DBOperationService.db.DB()
+		if err != nil {
+			log.Printf("Failed to connect to database for migrations: %v", err)
+		}
+		tests.DeleteTestData(sqlDB)
 	})
 
 	t.Run("returns error when user not found", func(t *testing.T) {
