@@ -25,12 +25,16 @@ jobs:
         run: go mod download
 
       - name: Run tests with coverage
-        run: go test -v -coverprofile=coverage.txt ./...
+        run: |
+          # Run tests and generate a coverage profile
+          go test -v -coverprofile=coverage.txt ./...
+          # Filter out the "tests" directory from the coverage profile
+          grep -v "/tests/" coverage.txt > coverage_filtered.txt
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: coverage.txt
+          files: coverage_filtered.txt  # Use the filtered coverage file
           token: ${{ secrets.CODECOV_TOKEN }}  # Add your Codecov token in GitHub Secrets
           flags: unittests
           name: codecov-coverage
