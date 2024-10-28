@@ -12,14 +12,11 @@ import (
 	"github.com/shibbirmcc/user-auth-and-permissions/mocks"
 	"github.com/shibbirmcc/user-auth-and-permissions/models"
 	"github.com/shibbirmcc/user-auth-and-permissions/services"
-	"github.com/shibbirmcc/user-auth-and-permissions/tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestConfigureRouteEndPoints(t *testing.T) {
-
-	tests.LoadEnvironmentVariables()
 
 	mockDBService := new(mocks.MockDatabaseOperationService)
 	mockRegService := services.NewUserRegistrationService(mockDBService)
