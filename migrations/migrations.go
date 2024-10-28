@@ -1,23 +1,18 @@
 package migrations
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/golang-migrate/migrate/v4"
 	migratePostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"gorm.io/gorm"
 )
 
 // RunMigrations applies all database migrations.
-func RunMigrations() {
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"))
-
-	// Open a connection to the database
-	db, err := sql.Open("postgres", dsn)
+func RunMigrations(gormDB *gorm.DB, migrationSirectory string) {
+	db, err := gormDB.DB()
 	if err != nil {
 		log.Fatalf("Failed to connect to database for migrations: %v", err)
 	}
@@ -35,7 +30,7 @@ func RunMigrations() {
 
 	// Create a new migration instance
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://migrations",
+		fmt.Sprintf("file://%s", migrationSirectory),
 		"postgres",
 		driver,
 	)

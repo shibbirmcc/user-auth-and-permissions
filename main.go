@@ -36,7 +36,7 @@ func main() {
 	}
 
 	// Run database migrations
-	migrations.RunMigrations()
+	migrations.RunMigrations(db, "migrations")
 
 	// Set up services
 	databaseOperationService := services.NewDatabaseOperationService(db)
