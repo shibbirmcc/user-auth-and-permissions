@@ -47,7 +47,7 @@ func GetGormDBFromSQLDB(sqlDB *sql.DB) (*gorm.DB, error) {
 func SetupPostgresContainer() {
 	once.Do(func() {
 
-		loadEnvironmentVariables()
+		LoadEnvironmentVariables()
 
 		ctx := context.Background()
 
