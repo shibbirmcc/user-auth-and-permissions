@@ -1,25 +1,29 @@
 package services
 
 import (
-	"log"
 	"os"
 	"testing"
 
-	"github.com/joho/godotenv"
+	"github.com/shibbirmcc/user-auth-and-permissions/migrations"
+	"github.com/shibbirmcc/user-auth-and-permissions/tests"
+	"gorm.io/gorm"
+)
+
+var (
+	DBOperationService DatabaseOperationService
 )
 
 /*
 This TestMain method will be executed before starting to execute tests of this package
 */
 func TestMain(m *testing.M) {
-	err := godotenv.Load("../.env.test")
-	if err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
+	tests.SetupPostgresContainer()
+	var db *gorm.DB
+	db, _ = tests.GetGormDBFromSQLDB(tests.DB)
+	migrations.RunMigrations(db, "../migrations")
+	DBOperationService = *NewDatabaseOperationService(db)
 
-	// Run the tests
 	code := m.Run()
-
-	// Exit with the appropriate code
+	tests.TeardownPostgresContainer()
 	os.Exit(code)
 }

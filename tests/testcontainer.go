@@ -44,6 +44,17 @@ func GetGormDBFromSQLDB(sqlDB *sql.DB) (*gorm.DB, error) {
 	return gormDB, nil
 }
 
+func DeleteTestData() {
+	err := DB.QueryRow("DELETE FROM user_details;")
+	if err != nil {
+		fmt.Printf("Error delete rows from user_details: %v\n", err)
+	}
+	err = DB.QueryRow("DELETE FROM users;")
+	if err != nil {
+		fmt.Printf("Error delete rows from user_details: %v\n", err)
+	}
+}
+
 func SetupPostgresContainer() {
 	once.Do(func() {
 
@@ -102,14 +113,7 @@ func SetupPostgresContainer() {
 
 func TeardownPostgresContainer() {
 	teardownOnce.Do(func() {
-		err := DB.QueryRow("TRUNCATE TABLE user_details;")
-		if err != nil {
-			fmt.Printf("Error delete rows from user_details: %v\n", err)
-		}
-		err = DB.QueryRow("TRUNCATE TABLE users;")
-		if err != nil {
-			fmt.Printf("Error delete rows from user_details: %v\n", err)
-		}
+		DeleteTestData()
 
 		if DB != nil {
 			DB.Close()
