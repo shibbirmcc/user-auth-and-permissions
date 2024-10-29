@@ -37,7 +37,7 @@ func TestRegisterUser_Success(t *testing.T) {
 	// Create a test request.
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(body))
+	c.Request = httptest.NewRequest(http.MethodPost, "/auth/register", bytes.NewBuffer(body))
 	c.Request.Header.Set("Content-Type", "application/json")
 
 	// Call the RegisterUser handler.
@@ -72,7 +72,7 @@ func TestRegisterUser_InternalServerError(t *testing.T) {
 	// Create a test request.
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(body))
+	c.Request = httptest.NewRequest(http.MethodPost, "/auth/register", bytes.NewBuffer(body))
 	c.Request.Header.Set("Content-Type", "application/json")
 
 	// Call the RegisterUser handler.
@@ -84,4 +84,26 @@ func TestRegisterUser_InternalServerError(t *testing.T) {
 
 	// Assert that the expected methods were called.
 	mockDBService.AssertExpectations(t)
+}
+
+func TestRegisterUser_InvalidJson(t *testing.T) {
+	mockDBService := new(mocks.MockDatabaseOperationService)
+	mockRegService := services.NewUserRegistrationService(mockDBService)
+	mockLoginService := services.NewUserLoginService(mockDBService)
+	handler := &UserHandler{userRegistrationService: *mockRegService, userLoginService: *mockLoginService}
+
+	body := `{"email": "test@example.com", "firstName": 123}`
+
+	// Create a test request.
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodPost, "/auth/register", bytes.NewBuffer([]byte(body)))
+	c.Request.Header.Set("Content-Type", "application/json")
+
+	// Call the RegisterUser handler.
+	handler.RegisterUser(c)
+
+	// Check the response.
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "error")
 }
