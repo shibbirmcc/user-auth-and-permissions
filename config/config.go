@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/joho/godotenv"
 	gormPostgres "gorm.io/driver/postgres"
@@ -11,10 +12,15 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func LoadEnv() {
-	err := godotenv.Load()
+func LoadEnv(envFilePath string) {
+	absPath, err := filepath.Abs(envFilePath)
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatalf("Error getting absolute path for %s: %v", envFilePath, err)
+	}
+
+	err = godotenv.Load(absPath)
+	if err != nil {
+		log.Fatalf("Error loading .env file at %s", absPath)
 	}
 }
 

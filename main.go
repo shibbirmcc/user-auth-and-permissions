@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	// Aliasing to avoid conflict
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -12,9 +13,13 @@ import (
 )
 
 func main() {
-	config.LoadEnv()
+	absEnvPath, err := filepath.Abs(".env")
+	if err != nil {
+		log.Fatalf("Error finding absolute path of .env.test: %v", err)
+	}
+	config.LoadEnv(absEnvPath)
 	db := config.GetDatabase()
-	initializer.ApplyMigrations(db)
+	initializer.ApplyMigrations(db, "migrations")
 
 	userRegService, userLoginService := initializer.InitializeServices(db)
 	userHandler := initializer.InitializeHandlers(userRegService, userLoginService)

@@ -21,8 +21,8 @@ func InitializeHandlers(regService *services.UserRegistrationService, loginServi
 	return handlers.NewUserHandler(*regService, *loginService)
 }
 
-func ApplyMigrations(db *gorm.DB) {
-	migrations.RunMigrations(db, "migrations")
+func ApplyMigrations(db *gorm.DB, migrationDirectory string) {
+	migrations.RunMigrations(db, migrationDirectory)
 }
 
 func SetupRouter(userHandler *handlers.UserHandler) *gin.Engine {
