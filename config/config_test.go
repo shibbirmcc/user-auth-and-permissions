@@ -7,8 +7,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 func TestLoadEnv(t *testing.T) {
@@ -27,26 +25,37 @@ func TestLoadEnv(t *testing.T) {
 	assert.Equal(t, "snakeexactwhichrepliedpothearthasdigplentymathemat", os.Getenv("JWT_SECRET"))
 }
 
-// TestGetDatabase verifies that a database connection is established
-func TestGetDatabase(t *testing.T) {
-	os.Setenv("DB_HOST", "127.0.0.1")
-	os.Setenv("DB_USER", "serviceuser")
-	os.Setenv("DB_PASSWORD", "servicepassword")
-	os.Setenv("DB_NAME", "servicedatabase")
-	os.Setenv("DB_PORT", "5432")
-
-	// Use an in-memory SQLite database to test connection
-	dsn := "file::memory:?cache=shared"
-	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
+func TestGetDatabase_Success(t *testing.T) {
+	absEnvPath, err := filepath.Abs("../.env.test")
 	if err != nil {
-		t.Fatalf("failed to connect to SQLite in-memory database: %v", err)
+		log.Fatalf("Error finding absolute path of .env.test: %v", err)
 	}
+	LoadEnv(absEnvPath)
 
-	// Verify that the connection is valid
-	sqlDB, err := db.DB()
+	// Use an in-memory SQLite database for testing connection
+	db, err := GetDatabase()
+	defer func() {
+		if db != nil {
+			sqlDB, _ := db.DB()
+			sqlDB.Close()
+		}
+	}()
 	assert.NoError(t, err)
-	assert.NoError(t, sqlDB.Ping())
+	assert.NotNil(t, db, "Database should be successfully connected")
+}
 
-	// Close the database connection at the end of the test
-	defer sqlDB.Close()
+func TestGetDatabase_Failure(t *testing.T) {
+	// Clear environment variables to simulate missing connection information
+	os.Setenv("DB_HOST", "")
+	os.Setenv("DB_USER", "")
+	os.Setenv("DB_PASSWORD", "")
+	os.Setenv("DB_NAME", "")
+	os.Setenv("DB_PORT", "")
+
+	// Attempt to get a database connection
+	db, err := GetDatabase()
+
+	// Assertions
+	assert.Error(t, err, "Expected an error due to missing environment variables")
+	assert.Nil(t, db, "Database should not be connected on failure")
 }

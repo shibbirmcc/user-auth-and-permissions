@@ -18,7 +18,10 @@ func main() {
 		log.Fatalf("Error finding absolute path of .env.test: %v", err)
 	}
 	config.LoadEnv(absEnvPath)
-	db := config.GetDatabase()
+	db, err := config.GetDatabase()
+	if err != nil {
+		os.Exit(1)
+	}
 	initializer.ApplyMigrations(db, "migrations")
 
 	userRegService, userLoginService := initializer.InitializeServices(db)
