@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/shibbirmcc/user-auth-and-permissions/tests"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,11 +27,8 @@ func TestLoadEnv(t *testing.T) {
 }
 
 func TestGetDatabase_Success(t *testing.T) {
-	absEnvPath, err := filepath.Abs("../.env.test")
-	if err != nil {
-		log.Fatalf("Error finding absolute path of .env.test: %v", err)
-	}
-	LoadEnv(absEnvPath)
+	_, TeardownPostgresContainer := tests.SetupPostgresContainer()
+	defer TeardownPostgresContainer()
 
 	// Use an in-memory SQLite database for testing connection
 	db, err := GetDatabase()
