@@ -1,6 +1,9 @@
 package initializer
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/gin-gonic/gin"
 	"github.com/shibbirmcc/user-auth-and-permissions/handlers"
 	"github.com/shibbirmcc/user-auth-and-permissions/middlewares"
@@ -30,4 +33,14 @@ func SetupRouter(userHandler *handlers.UserHandler) *gin.Engine {
 	router.Use(middlewares.CORSMiddleware())            // Add CORS middleware
 	routes.ConfigureRouteEndpoints(router, userHandler) // Set up route handlers
 	return router
+}
+
+func InitializePasswordDeliveryService() (services.PasswordDeliveryService, error) {
+	deliveryType := os.Getenv("PASSWORD_DELIVERY_TYPE")
+	switch services.PasswordDeliveryType(deliveryType) {
+	case services.KAFKA_TOPIC:
+		return services.NewKafkaPasswordDeliveryService()
+	default:
+		return nil, fmt.Errorf("unsupported password delivery type: %s", deliveryType)
+	}
 }
