@@ -1,6 +1,7 @@
 package initializer
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -27,9 +28,13 @@ func TestInitializeHandlers(t *testing.T) {
 
 	// Initialize services to pass into InitializeHandlers
 	regService, loginService := InitializeServices(db)
-
+	var err error
+	passwordDeliveryService, err := InitializePasswordDeliveryService()
+	if err != nil {
+		fmt.Printf("Failed to initialize KafkaPasswordDeliveryService: %v", err)
+	}
 	// Test InitializeHandlers function
-	userHandler := InitializeHandlers(regService, loginService)
+	userHandler := InitializeHandlers(regService, loginService, &passwordDeliveryService)
 	assert.NotNil(t, userHandler, "UserHandler should not be nil")
 }
 
@@ -48,8 +53,16 @@ func TestApplyMigrations(t *testing.T) {
 func TestSetupRouter(t *testing.T) {
 	db, TeardownPostgresContainer := tests.SetupPostgresContainer()
 	defer TeardownPostgresContainer()
+	tearDownKafkaContainer := tests.SetupKafkaContainer()
+	defer tearDownKafkaContainer()
+
 	regService, loginService := InitializeServices(db)
-	userHandler := InitializeHandlers(regService, loginService)
+	var err error
+	passwordDeliveryService, err := InitializePasswordDeliveryService()
+	if err != nil {
+		fmt.Printf("Failed to initialize KafkaPasswordDeliveryService: %v", err)
+	}
+	userHandler := InitializeHandlers(regService, loginService, &passwordDeliveryService)
 
 	// Test SetupRouter function
 	router := SetupRouter(userHandler)

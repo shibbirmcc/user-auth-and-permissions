@@ -26,10 +26,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to initialize KafkaPasswordDeliveryService: %v", err)
 	}
-	passwordDeliveryService.SendPassword("shibbirmcc@gmail.com", "Shibbir", "", "Ahmed", "123456")
-
 	userRegService, userLoginService := initializer.InitializeServices(db)
-	userHandler := initializer.InitializeHandlers(userRegService, userLoginService)
+	userHandler := initializer.InitializeHandlers(userRegService, userLoginService, &passwordDeliveryService)
 
 	router := initializer.SetupRouter(userHandler)
 

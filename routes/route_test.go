@@ -19,9 +19,10 @@ import (
 func TestConfigureRouteEndPoints(t *testing.T) {
 
 	mockDBService := new(mocks.MockDatabaseOperationService)
+	mockPasswordDeliveryService := new(mocks.MockPasswordDeliveryService)
 	mockRegService := services.NewUserRegistrationService(mockDBService)
 	mockLoginService := services.NewUserLoginService(mockDBService)
-	userHandler := handlers.NewUserHandler(*mockRegService, *mockLoginService)
+	userHandler := handlers.NewUserHandler(*mockRegService, *mockLoginService, mockPasswordDeliveryService)
 
 	router := gin.Default()
 	ConfigureRouteEndpoints(router, userHandler)

@@ -1,0 +1,7 @@
+{
+"go.useLanguageServer": true,
+"go.buildOnSave": "workspace",
+"go.lintOnSave": "workspace",
+"go.formatOnSave": true
+
+}

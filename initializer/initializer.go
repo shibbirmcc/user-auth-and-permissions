@@ -20,8 +20,9 @@ func InitializeServices(db *gorm.DB) (*services.UserRegistrationService, *servic
 	return userRegistrationService, userLoginService
 }
 
-func InitializeHandlers(regService *services.UserRegistrationService, loginService *services.UserLoginService) *handlers.UserHandler {
-	return handlers.NewUserHandler(*regService, *loginService)
+func InitializeHandlers(regService *services.UserRegistrationService, loginService *services.UserLoginService,
+	passwordDeliveryService *services.PasswordDeliveryService) *handlers.UserHandler {
+	return handlers.NewUserHandler(*regService, *loginService, *passwordDeliveryService)
 }
 
 func ApplyMigrations(db *gorm.DB, migrationDirectory string) {

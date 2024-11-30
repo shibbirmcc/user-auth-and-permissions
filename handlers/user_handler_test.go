@@ -10,9 +10,10 @@ import (
 
 func TestNewUserHandler(t *testing.T) {
 	mockDBService := new(mocks.MockDatabaseOperationService)
+	mocksPasswordDeliveryService := new(mocks.MockPasswordDeliveryService)
 	mockRegService := services.NewUserRegistrationService(mockDBService)
 	mockLoginService := services.NewUserLoginService(mockDBService)
-	handler := NewUserHandler(*mockRegService, *mockLoginService)
+	handler := NewUserHandler(*mockRegService, *mockLoginService, mocksPasswordDeliveryService)
 
 	assert.NotNil(t, handler)
 

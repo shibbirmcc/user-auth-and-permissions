@@ -7,4 +7,5 @@ import (
 type MockUserHandler struct {
 	userRegistrationService mock.Mock
 	userLoginService        mock.Mock
+	passwordDeliveryService mock.Mock
 }
