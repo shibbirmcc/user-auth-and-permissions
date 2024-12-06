@@ -7,9 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/docker/docker/api/types/container"
 	_ "github.com/lib/pq"
-	"github.com/segmentio/kafka-go"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -24,45 +22,10 @@ func SetupKafkaContainer() func() {
 		log.Fatal("Environment variable KAFKA_TOPIC is not set")
 	}
 
-	// Start Zookeeper container
-	zookeeperReq := testcontainers.ContainerRequest{
-		Image:        "confluentinc/cp-zookeeper:latest",
-		ExposedPorts: []string{"2181/tcp"},
-		Env: map[string]string{
-			"ZOOKEEPER_CLIENT_PORT": "2181",
-			"ZOOKEEPER_TICK_TIME":   "2000",
-		},
-		WaitingFor: wait.ForLog("binding to port").WithStartupTimeout(60 * time.Second),
-	}
-
-	zookeeperContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: zookeeperReq,
-		Started:          true,
-	})
-	if err != nil {
-		log.Fatalf("Could not start Zookeeper container: %s", err)
-	}
-	zookeeperPort, err := zookeeperContainer.MappedPort(ctx, "2181")
-	if err != nil {
-		log.Fatalf("Could not get Zookeeper port: %s", err)
-	}
-
 	kafkaReq := testcontainers.ContainerRequest{
-		Image:        "confluentinc/cp-kafka:latest",
-		ExposedPorts: []string{"9092/tcp"},
-		Env: map[string]string{
-			"KAFKA_BROKER_ID":                                "1",
-			"KAFKA_ZOOKEEPER_CONNECT":                        fmt.Sprintf("host.docker.internal:%s", zookeeperPort.Port()),
-			"KAFKA_ADVERTISED_LISTENERS":                     "PLAINTEXT://localhost:9092",
-			"KAFKA_LISTENER_SECURITY_PROTOCOL_MAP":           "PLAINTEXT:PLAINTEXT",
-			"KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR":         "1",
-			"KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR": "1",
-			"KAFKA_TRANSACTION_STATE_LOG_MIN_ISR":            "1",
-		},
-		HostConfigModifier: func(config *container.HostConfig) {
-			config.ExtraHosts = []string{"host.docker.internal:host-gateway"} // Add host mapping
-		},
-		WaitingFor: wait.ForLog("Kafka Server started").WithStartupTimeout(120 * time.Second),
+		Image:        "shibbirmcc/kafka-with-zookeeper:latest", // Kafka with Zookeeper included
+		ExposedPorts: []string{"9092/tcp", "2181/tcp"},         // Kafka and Zookeeper ports
+		WaitingFor:   wait.ForLog("Kafka started successfully.").WithStartupTimeout(120 * time.Second),
 	}
 
 	kafkaContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
@@ -86,7 +49,7 @@ func SetupKafkaContainer() func() {
 	os.Setenv("KAFKA_BROKERS", fmt.Sprintf("%s:%s", kafkaHost, kafkaPort.Port()))
 
 	// Create the Kafka topic
-	err = createKafkaTopic(fmt.Sprintf("%s:%s", kafkaHost, kafkaPort.Port()), kafkaTopic)
+	err = createKafkaTopic(kafkaContainer, kafkaTopic)
 	if err != nil {
 		log.Fatalf("Could not create Kafka topic: %s", err)
 	}
@@ -99,44 +62,23 @@ func SetupKafkaContainer() func() {
 				log.Fatalf("Could not terminate Kafka container: %s", err)
 			}
 		}
-		if zookeeperContainer != nil {
-			err := zookeeperContainer.Terminate(ctx)
-			if err != nil {
-				log.Fatalf("Could not terminate Zookeeper container: %s", err)
-			}
-		}
 	}
-
 	return teardown
 }
 
-func createKafkaTopic(broker string, topic string) error {
-	conn, err := kafka.Dial("tcp", broker)
-	if err != nil {
-		return fmt.Errorf("failed to connect to Kafka broker: %w", err)
+func createKafkaTopic(container testcontainers.Container, topic string) error {
+	command := []string{
+		"/opt/kafka/bin/kafka-topics.sh",
+		"--create",
+		"--topic", topic,
+		"--bootstrap-server", "localhost:9092",
+		"--partitions", "1",
+		"--replication-factor", "1",
 	}
-	defer conn.Close()
-
-	controller, err := conn.Controller()
-	if err != nil {
-		return fmt.Errorf("failed to get Kafka controller: %w", err)
+	exitCode, stdout, stderr := container.Exec(context.Background(), command)
+	if exitCode != 0 {
+		return fmt.Errorf("failed to create Kafka topic: %s (stderr: %s)", stdout, stderr)
 	}
-
-	controllerConn, err := kafka.Dial("tcp", fmt.Sprintf("%s:%d", controller.Host, controller.Port))
-	if err != nil {
-		return fmt.Errorf("failed to connect to Kafka controller: %w", err)
-	}
-	defer controllerConn.Close()
-
-	err = controllerConn.CreateTopics(kafka.TopicConfig{
-		Topic:             topic,
-		NumPartitions:     1,
-		ReplicationFactor: 1,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to create Kafka topic: %w", err)
-	}
-
 	log.Printf("Kafka topic %s created successfully", topic)
 	return nil
 }
