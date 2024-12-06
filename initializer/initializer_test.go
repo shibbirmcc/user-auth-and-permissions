@@ -48,6 +48,9 @@ func TestApplyMigrations(t *testing.T) {
 func TestSetupRouter(t *testing.T) {
 	db, TeardownPostgresContainer := tests.SetupPostgresContainer()
 	defer TeardownPostgresContainer()
+	tearDownKafkaContainer := tests.SetupKafkaContainer()
+	defer tearDownKafkaContainer()
+
 	regService, loginService := InitializeServices(db)
 	userHandler := InitializeHandlers(regService, loginService)
 
