@@ -29,7 +29,8 @@ jobs:
           # Run tests and generate a coverage profile
           go test -v -coverprofile=coverage.txt ./...
           # Filter out the "tests" directory from the coverage profile
-          grep -v "/tests/" coverage.txt > coverage_filtered.txt
+          grep -v -E "(/tests/|/mocks/)" coverage.txt > coverage_filtered.txt
+
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
