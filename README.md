@@ -1,6 +1,6 @@
 # **User Auth and Permissions Service**
 
-[![Go Version](https://img.shields.io/github/go-mod/go-version/shibbirmcc/user-auth-and-permissions)](https://golang.org)
+[![Go Version](https://img.shields.io/badge/Go-1.22.8-blue)](https://golang.org)
 [![Build Status](https://github.com/shibbirmcc/user-auth-and-permissions/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/shibbirmcc/user-auth-and-permissions/actions)
 [![Coverage Status](https://codecov.io/gh/shibbirmcc/user-auth-and-permissions/branch/develop/graph/badge.svg)](https://codecov.io/gh/shibbirmcc/user-auth-and-permissions)
 

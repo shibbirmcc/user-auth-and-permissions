@@ -15,7 +15,8 @@ func TestLoadEnv(t *testing.T) {
 	if err != nil {
 		log.Fatalf("Error finding absolute path of .env.test: %v", err)
 	}
-	LoadEnv(absEnvPath)
+	err = LoadEnv(absEnvPath)
+	assert.Nil(t, err)
 
 	// Verify that environment variables are loaded as expected
 	assert.Equal(t, "127.0.0.1", os.Getenv("DB_HOST"))
@@ -24,6 +25,12 @@ func TestLoadEnv(t *testing.T) {
 	assert.Equal(t, "servicedatabase", os.Getenv("DB_NAME"))
 	assert.Equal(t, "5432", os.Getenv("DB_PORT"))
 	assert.Equal(t, "snakeexactwhichrepliedpothearthasdigplentymathemat", os.Getenv("JWT_SECRET"))
+}
+
+func TestLoadEnv_Error_Loading_EnvFile(t *testing.T) {
+	err := LoadEnv("unrecognized_path/.env")
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "Error loading .env file at")
 }
 
 func TestGetDatabase_Success(t *testing.T) {

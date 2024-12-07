@@ -13,16 +13,17 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func LoadEnv(envFilePath string) {
+func LoadEnv(envFilePath string) error {
 	absPath, err := filepath.Abs(envFilePath)
 	if err != nil {
-		log.Fatalf("Error getting absolute path for %s: %v", envFilePath, err)
+		return errors.New("Error getting absolute path for " + envFilePath + " : " + err.Error())
 	}
 
 	err = godotenv.Load(absPath)
 	if err != nil {
-		log.Fatalf("Error loading .env file at %s", absPath)
+		return errors.New("Error loading .env file at " + absPath)
 	}
+	return nil
 }
 
 func GetDatabase() (*gorm.DB, error) {
