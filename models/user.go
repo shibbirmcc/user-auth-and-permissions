@@ -7,7 +7,7 @@ type User struct {
 }
 
 type UserDetail struct {
-	UserID     uint   `gorm:"column:user_id;primaryKey"`
+	UserID     uint   `gorm:"column:user_id;primaryKey" json:"user_id"`
 	FirstName  string `gorm:"column:firstname;not null;size:100" json:"first_name"`
 	MiddleName string `gorm:"column:middlename;size:100" json:"middle_name"`
 	LastName   string `gorm:"column:lastname;not null;size:100" json:"last_name"`

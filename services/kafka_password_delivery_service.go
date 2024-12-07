@@ -2,15 +2,14 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/segmentio/kafka-go"
+	"github.com/shibbirmcc/user-auth-and-permissions/models"
+	"github.com/shibbirmcc/user-auth-and-permissions/utils"
 	"log"
 	"os"
 	"strings"
-
-	"github.com/segmentio/kafka-go"
-	"github.com/shibbirmcc/user-auth-and-permissions/models"
 )
 
 type MessageProducer interface {
@@ -54,7 +53,7 @@ func NewKafkaPasswordDeliveryService() (*KafkaPasswordDeliveryService, error) {
 }
 
 func (s *KafkaPasswordDeliveryService) SendPassword(credentials models.UserCredentials) error {
-	message, err := json.Marshal(credentials)
+	message, err := utils.MarshalObject(credentials)
 	if err != nil {
 		return err
 	}
