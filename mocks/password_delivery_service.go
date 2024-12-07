@@ -1,12 +1,15 @@
 package mocks
 
-import "errors"
+import (
+	"errors"
+	"github.com/shibbirmcc/user-auth-and-permissions/models"
+)
 
 type MockPasswordDeliveryService struct {
 	ShouldFail bool
 }
 
-func (m *MockPasswordDeliveryService) SendPassword(email, firstName, middleName, lastName, password string) error {
+func (m *MockPasswordDeliveryService) SendPassword(credentials models.UserCredentials) error {
 	if m.ShouldFail {
 		return errors.New("mock error: failed to send password")
 	}

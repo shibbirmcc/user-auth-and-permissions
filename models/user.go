@@ -24,3 +24,11 @@ type LoginRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }
+
+type UserCredentials struct {
+	Email      string `json:"email" binding:"required,email"`
+	FirstName  string `json:"first_name"`
+	MiddleName string `json:"middle_name"`
+	LastName   string `json:"last_name"`
+	Password   string `json:"password" binding:"required"`
+}

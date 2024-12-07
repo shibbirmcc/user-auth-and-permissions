@@ -3,6 +3,7 @@ package initializer
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -69,4 +70,34 @@ func performRequest(r *gin.Engine, method, path string) *httptest.ResponseRecord
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	return w
+}
+
+func TestInitializePasswordDeliveryService_KafkaTopicSuccess(t *testing.T) {
+	tearDownKafkaContainer := tests.SetupKafkaContainer()
+	defer tearDownKafkaContainer()
+
+	service, err := InitializePasswordDeliveryService()
+	assert.NoError(t, err)
+	assert.NotNil(t, service)
+}
+
+func TestInitializePasswordDeliveryService_InvalidType(t *testing.T) {
+	os.Setenv("PASSWORD_DELIVERY_TYPE", "UNSUPPORTED_TYPE")
+	defer os.Unsetenv("PASSWORD_DELIVERY_TYPE")
+	service, err := InitializePasswordDeliveryService()
+	assert.Error(t, err)
+	assert.Nil(t, service)
+	assert.EqualError(t, err, "unsupported password delivery type: UNSUPPORTED_TYPE")
+}
+
+func TestInitializePasswordDeliveryService_EmptyDeliveryType(t *testing.T) {
+	// Set up environment variable for an empty password delivery type
+	os.Setenv("PASSWORD_DELIVERY_TYPE", "")
+	defer os.Unsetenv("PASSWORD_DELIVERY_TYPE")
+
+	service, err := InitializePasswordDeliveryService()
+
+	assert.Error(t, err)
+	assert.Nil(t, service)
+	assert.EqualError(t, err, "unsupported password delivery type: ")
 }

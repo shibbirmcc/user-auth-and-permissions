@@ -1,5 +1,7 @@
 package services
 
+import "github.com/shibbirmcc/user-auth-and-permissions/models"
+
 type PasswordDeliveryType string
 
 const (
@@ -22,5 +24,5 @@ func (pst PasswordDeliveryType) String() string {
 }
 
 type PasswordDeliveryService interface {
-	SendPassword(email, firstName, middleName, lastName, password string) error
+	SendPassword(credentials models.UserCredentials) error
 }

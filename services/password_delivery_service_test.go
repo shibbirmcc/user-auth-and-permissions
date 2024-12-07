@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/shibbirmcc/user-auth-and-permissions/mocks"
+	"github.com/shibbirmcc/user-auth-and-permissions/models"
 	"testing"
 )
 
@@ -62,7 +63,14 @@ func TestPasswordDeliveryService_SendPassword(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.service.SendPassword(tt.email, tt.firstName, tt.middleName, tt.lastName, tt.password)
+			credentials := models.UserCredentials{
+				Email:      tt.email,
+				FirstName:  tt.firstName,
+				MiddleName: tt.middleName,
+				LastName:   tt.lastName,
+				Password:   tt.password,
+			}
+			err := tt.service.SendPassword(credentials)
 			if (err != nil) != tt.expectedError {
 				t.Errorf("Expected error: %v, got: %v", tt.expectedError, err != nil)
 			}
