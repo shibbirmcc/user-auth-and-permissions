@@ -9,12 +9,14 @@ import (
 )
 
 type UserRegistrationService struct {
-	dbService IDatabaseOperationService
+	passwordDeliveryService PasswordDeliveryService
+	dbService               IDatabaseOperationService
 }
 
-func NewUserRegistrationService(dbService IDatabaseOperationService) *UserRegistrationService {
+func NewUserRegistrationService(passwordDeliveryService PasswordDeliveryService, dbService IDatabaseOperationService) *UserRegistrationService {
 	return &UserRegistrationService{
-		dbService: dbService,
+		passwordDeliveryService: passwordDeliveryService,
+		dbService:               dbService,
 	}
 }
 
@@ -35,5 +37,13 @@ func (s *UserRegistrationService) RegisterUser(input models.UserRegitrationReque
 	if err := s.dbService.CreateUser(&user, &userDetail); err != nil {
 		return errors.New("error while registering user")
 	}
-	return nil
+
+	userCredentials := models.UserCredentials{
+		Email:      input.Email,
+		FirstName:  input.FirstName,
+		MiddleName: input.MiddleName,
+		LastName:   input.LastName,
+		Password:   generatedPassword,
+	}
+	return s.passwordDeliveryService.SendPassword(userCredentials)
 }

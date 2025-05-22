@@ -26,7 +26,8 @@ func TestRegisterUser_Success(t *testing.T) {
 	mockDB.On("CreateUser", mock.AnythingOfType("*models.User"), mock.AnythingOfType("*models.UserDetail")).Return(nil)
 
 	// Create the service with the mock database
-	service := NewUserRegistrationService(mockDB)
+	mockPasswordDeliveryService := &mocks.MockPasswordDeliveryService{ShouldFail: false}
+	service := NewUserRegistrationService(mockPasswordDeliveryService, mockDB)
 
 	// Call the RegisterUser method
 	err := service.RegisterUser(input)
@@ -52,7 +53,8 @@ func TestRegisterUser_FailOnCreateUser(t *testing.T) {
 	mockDB.On("CreateUser", mock.AnythingOfType("*models.User"), mock.AnythingOfType("*models.UserDetail")).Return(errors.New("database error"))
 
 	// Create the service with the mock database
-	service := NewUserRegistrationService(mockDB)
+	mockPasswordDeliveryService := &mocks.MockPasswordDeliveryService{ShouldFail: false}
+	service := NewUserRegistrationService(mockPasswordDeliveryService, mockDB)
 
 	// Call the RegisterUser method
 	err := service.RegisterUser(input)

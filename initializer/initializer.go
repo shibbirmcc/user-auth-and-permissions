@@ -14,7 +14,8 @@ import (
 
 func InitializeServices(db *gorm.DB) (*services.UserRegistrationService, *services.UserLoginService) {
 	databaseOperationService := services.NewDatabaseOperationService(db)
-	userRegistrationService := services.NewUserRegistrationService(databaseOperationService)
+	passwordDeliveryService, _ := InitializePasswordDeliveryService()
+	userRegistrationService := services.NewUserRegistrationService(passwordDeliveryService, databaseOperationService)
 	userLoginService := services.NewUserLoginService(databaseOperationService)
 	return userRegistrationService, userLoginService
 }

@@ -18,7 +18,8 @@ func TestLoginUser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	t.Run("successful login", func(t *testing.T) {
 		mockDBService := new(mocks.MockDatabaseOperationService)
-		mockRegService := services.NewUserRegistrationService(mockDBService)
+		mockPasswordDeliveryService := &mocks.MockPasswordDeliveryService{ShouldFail: false}
+		mockRegService := services.NewUserRegistrationService(mockPasswordDeliveryService, mockDBService)
 		mockLoginService := services.NewUserLoginService(mockDBService)
 
 		handler := &UserHandler{userRegistrationService: *mockRegService, userLoginService: *mockLoginService}
@@ -57,7 +58,8 @@ func TestLoginUser(t *testing.T) {
 
 	t.Run("bad request with invalid JSON", func(t *testing.T) {
 		mockDBService := new(mocks.MockDatabaseOperationService)
-		mockRegService := services.NewUserRegistrationService(mockDBService)
+		mockPasswordDeliveryService := &mocks.MockPasswordDeliveryService{ShouldFail: false}
+		mockRegService := services.NewUserRegistrationService(mockPasswordDeliveryService, mockDBService)
 		mockLoginService := services.NewUserLoginService(mockDBService)
 		handler := &UserHandler{userRegistrationService: *mockRegService, userLoginService: *mockLoginService}
 
@@ -95,7 +97,8 @@ func TestLoginUser(t *testing.T) {
 
 	t.Run("Invalid Email format Error Test", func(t *testing.T) {
 		mockDBService := new(mocks.MockDatabaseOperationService)
-		mockRegService := services.NewUserRegistrationService(mockDBService)
+		mockPasswordDeliveryService := &mocks.MockPasswordDeliveryService{ShouldFail: false}
+		mockRegService := services.NewUserRegistrationService(mockPasswordDeliveryService, mockDBService)
 		mockLoginService := services.NewUserLoginService(mockDBService)
 		handler := &UserHandler{userRegistrationService: *mockRegService, userLoginService: *mockLoginService}
 
@@ -129,7 +132,8 @@ func TestLoginUser(t *testing.T) {
 
 	t.Run("Unauthorized Login Test", func(t *testing.T) {
 		mockDBService := new(mocks.MockDatabaseOperationService)
-		mockRegService := services.NewUserRegistrationService(mockDBService)
+		mockPasswordDeliveryService := &mocks.MockPasswordDeliveryService{ShouldFail: false}
+		mockRegService := services.NewUserRegistrationService(mockPasswordDeliveryService, mockDBService)
 		mockLoginService := services.NewUserLoginService(mockDBService)
 		handler := &UserHandler{userRegistrationService: *mockRegService, userLoginService: *mockLoginService}
 

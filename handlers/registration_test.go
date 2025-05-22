@@ -19,7 +19,8 @@ import (
 // TestRegisterUser_Success tests the successful registration flow.
 func TestRegisterUser_Success(t *testing.T) {
 	mockDBService := new(mocks.MockDatabaseOperationService)
-	mockRegService := services.NewUserRegistrationService(mockDBService)
+	mockPasswordDeliveryService := &mocks.MockPasswordDeliveryService{ShouldFail: false}
+	mockRegService := services.NewUserRegistrationService(mockPasswordDeliveryService, mockDBService)
 	mockLoginService := services.NewUserLoginService(mockDBService)
 	handler := &UserHandler{userRegistrationService: *mockRegService, userLoginService: *mockLoginService}
 
@@ -54,7 +55,8 @@ func TestRegisterUser_Success(t *testing.T) {
 // TestRegisterUser_InternalServerError tests the case where the CreateUser method fails.
 func TestRegisterUser_InternalServerError(t *testing.T) {
 	mockDBService := new(mocks.MockDatabaseOperationService)
-	mockRegService := services.NewUserRegistrationService(mockDBService)
+	mockPasswordDeliveryService := &mocks.MockPasswordDeliveryService{ShouldFail: false}
+	mockRegService := services.NewUserRegistrationService(mockPasswordDeliveryService, mockDBService)
 	mockLoginService := services.NewUserLoginService(mockDBService)
 	handler := &UserHandler{userRegistrationService: *mockRegService, userLoginService: *mockLoginService}
 
@@ -88,7 +90,8 @@ func TestRegisterUser_InternalServerError(t *testing.T) {
 
 func TestRegisterUser_InvalidJson(t *testing.T) {
 	mockDBService := new(mocks.MockDatabaseOperationService)
-	mockRegService := services.NewUserRegistrationService(mockDBService)
+	mockPasswordDeliveryService := &mocks.MockPasswordDeliveryService{ShouldFail: false}
+	mockRegService := services.NewUserRegistrationService(mockPasswordDeliveryService, mockDBService)
 	mockLoginService := services.NewUserLoginService(mockDBService)
 	handler := &UserHandler{userRegistrationService: *mockRegService, userLoginService: *mockLoginService}
 

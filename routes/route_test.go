@@ -19,7 +19,8 @@ import (
 func TestConfigureRouteEndPoints(t *testing.T) {
 
 	mockDBService := new(mocks.MockDatabaseOperationService)
-	mockRegService := services.NewUserRegistrationService(mockDBService)
+	mockPasswordDeliveryService := &mocks.MockPasswordDeliveryService{ShouldFail: false}
+	mockRegService := services.NewUserRegistrationService(mockPasswordDeliveryService, mockDBService)
 	mockLoginService := services.NewUserLoginService(mockDBService)
 	userHandler := handlers.NewUserHandler(*mockRegService, *mockLoginService)
 
