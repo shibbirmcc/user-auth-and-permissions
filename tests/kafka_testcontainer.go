@@ -22,10 +22,27 @@ func SetupKafkaContainer() func() {
 		log.Fatal("Environment variable KAFKA_TOPIC is not set")
 	}
 
+	// Use official Apache Kafka image with Kraft mode (no Zookeeper)
 	kafkaReq := testcontainers.ContainerRequest{
-		Image:        "shibbirmcc/kafka-with-zookeeper:latest", // Kafka with Zookeeper included
-		ExposedPorts: []string{"9092/tcp", "2181/tcp"},         // Kafka and Zookeeper ports
-		WaitingFor:   wait.ForLog("Kafka started successfully.").WithStartupTimeout(120 * time.Second),
+		Image:        "apache/kafka:3.8.1", // Latest stable Kafka image with Kraft mode
+		ExposedPorts: []string{"9092/tcp"},  // Only Kafka port needed (no Zookeeper)
+		Env: map[string]string{
+			// Kraft mode configuration
+			"KAFKA_NODE_ID":                         "1",
+			"KAFKA_PROCESS_ROLES":                   "broker,controller",
+			"KAFKA_CONTROLLER_QUORUM_VOTERS":        "1@localhost:9093",
+			"KAFKA_LISTENERS":                       "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093",
+			"KAFKA_ADVERTISED_LISTENERS":            "PLAINTEXT://localhost:9092",
+			"KAFKA_LISTENER_SECURITY_PROTOCOL_MAP":  "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT",
+			"KAFKA_CONTROLLER_LISTENER_NAMES":       "CONTROLLER",
+			"KAFKA_INTER_BROKER_LISTENER_NAME":      "PLAINTEXT",
+			"KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR": "1",
+			"KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR": "1",
+			"KAFKA_TRANSACTION_STATE_LOG_MIN_ISR":   "1",
+			"KAFKA_LOG_DIRS":                        "/tmp/kraft-combined-logs",
+			"KAFKA_AUTO_CREATE_TOPICS_ENABLE":       "true",
+		},
+		WaitingFor: wait.ForLog("Kafka Server started").WithStartupTimeout(120 * time.Second),
 	}
 
 	kafkaContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
@@ -47,6 +64,9 @@ func SetupKafkaContainer() func() {
 
 	// Set the Kafka brokers environment variable
 	os.Setenv("KAFKA_BROKERS", fmt.Sprintf("%s:%s", kafkaHost, kafkaPort.Port()))
+
+	// Wait a bit for Kafka to be fully ready
+	time.Sleep(5 * time.Second)
 
 	// Create the Kafka topic
 	err = createKafkaTopic(kafkaContainer, kafkaTopic)
