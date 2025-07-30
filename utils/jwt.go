@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/shibbirmcc/user-auth-and-permissions/models"
 )
 
@@ -24,8 +24,8 @@ func GenerateJWT(email string, userDetails models.UserDetail) (string, error) {
 		FirstName:  userDetails.FirstName,
 		MiddleName: userDetails.MiddleName,
 		LastName:   userDetails.LastName,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
