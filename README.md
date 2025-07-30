@@ -49,7 +49,7 @@ The **User Auth and Permissions** service is a robust, scalable **Golang** backe
   - [GORM](https://gorm.io/) for ORM and database interaction.
   - [Tonic](https://github.com/loopfz/golang-swiss-army-knife/tree/master/tonic) for parameter binding in **Gin**.
 - **Database**: [PostgreSQL](https://www.postgresql.org/)
-- **Authentication**: [JWT](https://github.com/dgrijalva/jwt-go)
+- **Authentication**: [JWT](https://github.com/golang-jwt/jwt)
 - **Migrations**: [golang-migrate](https://github.com/golang-migrate/migrate)
 - **Testing**: [TestContainers](https://github.com/testcontainers/testcontainers-go) for integration testing.
 
