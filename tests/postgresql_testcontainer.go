@@ -8,23 +8,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/docker/go-connections/nat"
 	_ "github.com/lib/pq"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
-
-func waitForDBConnection(db *sql.DB) error {
-	maxAttempts := 5
-	for i := 0; i < maxAttempts; i++ {
-		if err := db.Ping(); err == nil {
-			return nil
-		}
-		time.Sleep(2 * time.Second) // Wait before retrying
-	}
-	return fmt.Errorf("could not establish database connection after %d attempts", maxAttempts)
-}
 
 func GetGormDBFromSQLDB(sqlDB *sql.DB) (*gorm.DB, error) {
 	gormDB, err := gorm.Open(postgres.New(postgres.Config{
@@ -60,7 +50,10 @@ func SetupPostgresContainer() (*gorm.DB, func()) {
 			"POSTGRES_PASSWORD": os.Getenv("DB_PASSWORD"),
 			"POSTGRES_DB":       os.Getenv("DB_NAME"),
 		},
-		WaitingFor: wait.ForLog("database system is ready to accept connections").WithStartupTimeout(60 * time.Second),
+		WaitingFor: wait.ForSQL("5432/tcp", "postgres", func(host string, port nat.Port) string {
+			return fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+				os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), host, port.Port(), os.Getenv("DB_NAME"))
+		}).WithStartupTimeout(60 * time.Second),
 	}
 
 	var err error
@@ -95,11 +88,6 @@ func SetupPostgresContainer() (*gorm.DB, func()) {
 	sqlDB, err = sql.Open("postgres", dsn)
 	if err != nil {
 		fmt.Printf("Failed to connect to database: %v\n", err)
-		os.Exit(1)
-	}
-
-	if err := waitForDBConnection(sqlDB); err != nil {
-		fmt.Printf("Testcontainer Database is not ready: %v\n", err)
 		os.Exit(1)
 	}
 
