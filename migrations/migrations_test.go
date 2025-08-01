@@ -14,13 +14,6 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-// func TestMain(m *testing.M) {
-// 	tests.SetupPostgresContainer()
-// 	code := m.Run()
-// 	tests.TeardownPostgresContainer()
-// 	os.Exit(code)
-// }
-
 func TestRunMigrations(t *testing.T) {
 	gormDB, TeardownPostgresContainer := tests.SetupPostgresContainer()
 	defer TeardownPostgresContainer()
