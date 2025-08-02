@@ -32,7 +32,7 @@ func TestGenerateJWT_Success(t *testing.T) {
 	assert.NotEmpty(t, tokenString)
 
 	// Parse the token to verify claims
-	token, err := jwt.ParseWithClaims(tokenString, &models.Claims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &models.Claims{}, func(token *jwt.Token) (any, error) {
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 

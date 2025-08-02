@@ -2,7 +2,6 @@ package migrations
 
 import (
 	"bytes"
-	"io/ioutil"
 	"log"
 	"os"
 	"testing"
@@ -115,13 +114,13 @@ func TestRunMigrations_MigrationApplicationFailure(t *testing.T) {
 	defer TeardownPostgresContainer()
 
 	// Create a temporary directory for migration files
-	tmpDir, err := ioutil.TempDir("", "migrations")
+	tmpDir, err := os.MkdirTemp("", "migrations")
 	assert.NoError(t, err)
 	defer os.RemoveAll(tmpDir) // Clean up after the test
 
 	// Create an invalid migration file
 	migrationFile := tmpDir + "/0001_invalid_migration.up.sql"
-	err = ioutil.WriteFile(migrationFile, []byte("INVALID SQL SYNTAX;"), 0644)
+	err = os.WriteFile(migrationFile, []byte("INVALID SQL SYNTAX;"), 0644)
 	assert.NoError(t, err)
 
 	// Run migrations using the directory with the invalid migration file
